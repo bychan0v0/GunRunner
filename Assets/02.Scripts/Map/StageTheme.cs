@@ -10,5 +10,4 @@ public class StageTheme : ScriptableObject
     public GameObject[] decoTiles;
 
     public GameObject playerSpawnMarkerPrefab;
-    public GameObject portalPrefab;   // 다음 방으로 넘어가는 포털(Archero 스타일)
 }

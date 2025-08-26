@@ -66,8 +66,6 @@ public class MapGenerator : MonoBehaviour
 
             GenerateSingleRoom(roomGo.transform, i);
 
-            // (유지) 방 사이 포탈은 사용하지 않음 ? 포탈은 각 방 내부 상단 중앙에 배치
-
             // 다음 방 위치로 커서 이동 (가로로 나열)
             cursor += new Vector3((roomSize.x + roomGap) * tileSize, 0f, 0f);
         }
@@ -122,19 +120,12 @@ public class MapGenerator : MonoBehaviour
         int ringMinY = Mathf.Max(0, innerStart.y - wallRingThickness);
         int ringMaxY = Mathf.Min(roomSize.y - 1, innerEnd.y   + wallRingThickness);
 
-        // === 스폰/포탈 타일 결정 ===
-        int bottomY = innerStart.y;
-        int topY    = innerEnd.y;
-
-        // 스폰: 짝수면 2칸, 홀수면 1칸(기존 유지)
-        int[] spawnCols  = GetCenterColumns(innerStart.x, innerEnd.x);
-        // 포탈: 짝수면 2칸, 홀수면 3칸(폭이 1이면 1칸)
-        int[] portalCols = GetPortalColumns(innerStart.x, innerEnd.x);
-
-        var spawnTiles  = new List<Vector2Int>();
-        var portalTiles = new List<Vector2Int>();
-        foreach (int cx in spawnCols)  spawnTiles.Add(new Vector2Int(cx, bottomY));
-        foreach (int cx in portalCols) portalTiles.Add(new Vector2Int(cx, topY));
+        // === 스폰 타일: inner 중앙 1칸 ===
+        Vector2Int centerTile = new Vector2Int(
+            Mathf.RoundToInt((innerStart.x + innerEnd.x) * 0.5f),
+            Mathf.RoundToInt((innerStart.y + innerEnd.y) * 0.5f)
+        );
+        var spawnTiles = new List<Vector2Int> { centerTile };
 
         // 1) 바닥: 내부는 floorTiles(랜덤)@innerY, 외부/링은 "벽 타일(첫 번째)@outerY"로 통일
         GameObject outerTilePrefab = GetFirst(theme.wallTiles);
@@ -187,23 +178,13 @@ public class MapGenerator : MonoBehaviour
             }
         }
 
-        // 3) 스폰/포탈 배치 (모두 내부 높이)
+        // 3) 스폰 배치 (첫 방에만, 내부 높이)
         if (roomIndex == 0 && theme.playerSpawnMarkerPrefab != null)
         {
             foreach (var tile in spawnTiles)
             {
                 var spawn = InstantiateAtHeight(theme.playerSpawnMarkerPrefab, roomParent, tile.x, tile.y, innerY);
                 spawn.name = "PlayerSpawn";
-            }
-        }
-
-        if (roomIndex < roomCount - 1 && theme.portalPrefab != null)
-        {
-            foreach (var tile in portalTiles)
-            {
-                var exitPos = LocalToWorld(roomParent, tile.x, tile.y);
-                exitPos.y = innerY;
-                Instantiate(theme.portalPrefab, exitPos, Quaternion.identity, roomParent);
             }
         }
 
@@ -214,9 +195,8 @@ public class MapGenerator : MonoBehaviour
             for (int x = innerStart.x; x <= innerEnd.x; x++)
             for (int y = innerStart.y; y <= innerEnd.y; y++)
             {
-                // 스폰/포탈 타일 및 주변 안전 구역 비우기
+                // 스폰 주변 안전 구역 비우기
                 if (IsNearAny(spawnTiles, x, y, innerSafeRadius)) continue;
-                if (IsOnAny(portalTiles, x, y)) continue;
 
                 if (rng.NextDouble() < obstacleDensity)
                 {
@@ -307,48 +287,5 @@ public class MapGenerator : MonoBehaviour
         foreach (var p in points)
             if (IsNear(p, x, y, r)) return true;
         return false;
-    }
-
-    bool IsOnAny(List<Vector2Int> points, int x, int y)
-    {
-        foreach (var p in points)
-            if (p.x == x && p.y == y) return true;
-        return false;
-    }
-
-    // 스폰(짝수=2칸, 홀수=1칸)
-    int[] GetCenterColumns(int minX, int maxX)
-    {
-        int width = maxX - minX + 1;
-        if (width <= 0) return new int[0];
-        if (width % 2 == 1) return new[] { minX + width / 2 }; // 홀수 -> 1칸
-        // 짝수: 중앙 2칸
-        return new[] { minX + (width / 2 - 1), minX + (width / 2) };
-    }
-
-    // 포탈(짝수=2칸, 홀수=3칸; 단, 폭이 1이면 1칸로 폴백)
-    int[] GetPortalColumns(int minX, int maxX)
-    {
-        int width = maxX - minX + 1;
-        if (width <= 0) return new int[0];
-
-        if (width % 2 == 0)
-        {
-            // 짝수: 중앙 2칸
-            return new[] { minX + (width / 2 - 1), minX + (width / 2) };
-        }
-        else
-        {
-            if (width >= 3)
-            {
-                int center = minX + width / 2;
-                return new[] { center - 1, center, center + 1 }; // 홀수: 3칸
-            }
-            else
-            {
-                // width == 1
-                return new[] { minX }; // 중앙 1칸
-            }
-        }
     }
 }

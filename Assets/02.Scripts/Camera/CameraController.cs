@@ -12,8 +12,7 @@ public class CameraController : MonoBehaviour
         // 플레이어 기준 위치
         Vector3 targetPos = player.position + offset;
 
-        // x, y는 고정하고 z만 플레이어와 함께 이동
-        targetPos.x = transform.position.x;
+        // y는 고정하고 x, z만 플레이어와 함께 이동
         targetPos.y = transform.position.y;
 
         transform.position = targetPos;
