@@ -16,4 +16,5 @@ MonoBehaviour:
   duration: 60
   isBossWave: 1
   monsterCount: 1
-  monsterPrefabs: []
+  monsterPrefabs:
+  - {fileID: 4821435713554542601, guid: cee83977cb967f74d9fabccba5d15c9e, type: 3}

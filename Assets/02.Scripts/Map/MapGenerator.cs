@@ -4,34 +4,34 @@ using UnityEngine;
 
 public class MapGenerator : MonoBehaviour
 {
-    public StageTheme theme;
+    [SerializeField] private StageTheme theme;
 
-    [Min(1)] public int roomCount = 8;
+    [Min(1)] [SerializeField] private int roomCount = 8;
     
     // === 방 크기와 내부(벽으로 둘러싸일) 공간 크기 ===
     [Header("Sizes")]
-    public Vector2Int roomSize = new Vector2Int(14, 10); // 전체 맵(그리드) 크기
-    public Vector2Int innerSize = new Vector2Int(10, 8); // 벽으로 둘러싸인 내부 공간 크기
-    public float tileSize = 1.0f;                        // 타일 월드 간격
-    [Range(1, 5)] public int wallRingThickness = 1;      // 벽/바깥 고지대 두께(타일 수)
+    [SerializeField] private Vector2Int roomSize = new Vector2Int(14, 10); // 전체 맵(그리드) 크기
+    [SerializeField] private Vector2Int innerSize = new Vector2Int(10, 8); // 벽으로 둘러싸인 내부 공간 크기
+    [SerializeField] private float tileSize = 1.0f;                        // 타일 월드 간격
+    [Range(1, 5)] [SerializeField] private int wallRingThickness = 1;      // 벽/바깥 고지대 두께(타일 수)
 
     // === 높이 ===
     [Header("Heights")]
-    public float innerY = 0f;     // 내부 바닥 높이
-    public float outerY = 1f;     // 바깥(벽 포함) 높이 = 내부보다 +1
+    [SerializeField] private float innerY = 0f;     // 내부 바닥 높이
+    [SerializeField] private float outerY = 1f;     // 바깥(벽 포함) 높이 = 내부보다 +1
     
-    public float roomGap = 3.0f;  // 방과 방 사이 간격
+    [SerializeField] private float roomGap = 3.0f;  // 방과 방 사이 간격
 
-    public int seed = 12345;
+    [SerializeField] private int seed = 12345;
 
     // 배치 규칙
     [Header("Placement")]
-    [Range(0f, 0.5f)] public float obstacleDensity = 0.08f; // 내부용(장애물만)
-    [Range(0f, 0.5f)] public float decoDensity     = 0.10f; // 외부용(장식만)
-    public float obstacleYOffset = 1f; // 내부 바닥보다 +1
-    public int innerSafeRadius   = 2;  // 스폰 주변 안전 구역(원하면 0)
+    [Range(0f, 0.5f)] [SerializeField] private float obstacleDensity = 0.08f; // 내부용(장애물만)
+    [Range(0f, 0.5f)] [SerializeField] private float decoDensity     = 0.10f; // 외부용(장식만)
+    [SerializeField] private float obstacleYOffset = 1f; // 내부 바닥보다 +1
+    [SerializeField] private int innerSafeRadius   = 2;  // 스폰 주변 안전 구역(원하면 0)
 
-    public Transform stageRoot;
+    [SerializeField] private Transform stageRoot;
 
     System.Random rng;
 
