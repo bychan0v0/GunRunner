@@ -128,7 +128,7 @@ public class MapGenerator : MonoBehaviour
         var spawnTiles = new List<Vector2Int> { centerTile };
 
         // 1) 바닥: 내부는 floorTiles(랜덤)@innerY, 외부/링은 "벽 타일(첫 번째)@outerY"로 통일
-        GameObject outerTilePrefab = GetFirst(theme.wallTiles);
+        GameObject outerTilePrefab = GetFirstAtArray(theme.wallTiles);
         if (outerTilePrefab == null)
         {
             Debug.LogWarning("[MapGenerator] wallTiles가 비어있어 외부 바닥을 생성할 수 없습니다.");
@@ -144,7 +144,7 @@ public class MapGenerator : MonoBehaviour
 
                 if (isInside)
                 {
-                    var floor = Pick(theme.floorTiles);
+                    var floor = RandomPickAtArray(theme.floorTiles);
                     if (floor != null)
                         InstantiateAtHeight(floor, roomParent, x, y, innerY);
                 }
@@ -196,11 +196,11 @@ public class MapGenerator : MonoBehaviour
             for (int y = innerStart.y; y <= innerEnd.y; y++)
             {
                 // 스폰 주변 안전 구역 비우기
-                if (IsNearAny(spawnTiles, x, y, innerSafeRadius)) continue;
+                if (GridUtils.IsNearAny(spawnTiles, x, y, innerSafeRadius)) continue;
 
                 if (rng.NextDouble() < obstacleDensity)
                 {
-                    var obs = Pick(theme.obstacleTiles);
+                    var obs = RandomPickAtArray(theme.obstacleTiles);
                     if (obs != null) InstantiateAtHeight(obs, roomParent, x, y, innerY + obstacleYOffset);
                 }
             }
@@ -212,8 +212,8 @@ public class MapGenerator : MonoBehaviour
             for (int x = 0; x < roomSize.x; x++)
             for (int y = 0; y < roomSize.y; y++)
             {
-                bool insideInner = IsInsideRect(x, y, innerStart, innerEnd);
-                bool insideRing  = IsInsideRect(x, y, new Vector2Int(ringMinX, ringMinY),
+                bool insideInner = GridUtils.IsInsideRect(x, y, innerStart, innerEnd);
+                bool insideRing  = GridUtils.IsInsideRect(x, y, new Vector2Int(ringMinX, ringMinY),
                                                      new Vector2Int(ringMaxX, ringMaxY));
 
                 // 외부 = 전체 - (내부 ∪ 링 사각형)
@@ -222,70 +222,39 @@ public class MapGenerator : MonoBehaviour
 
                 if (rng.NextDouble() < decoDensity)
                 {
-                    var deco = Pick(theme.decoTiles);
+                    var deco = RandomPickAtArray(theme.decoTiles);
                     if (deco != null) InstantiateAtHeight(deco, roomParent, x, y, outerY);
                 }
             }
         }
     }
 
-    // ======= 유틸 =======
+    // 유틸 메서드
     GameObject InstantiateAtHeight(GameObject prefab, Transform parent, int gridX, int gridY, float y)
     {
-        Vector3 pos = LocalToWorld(parent, gridX, gridY);
+        Vector3 pos = GridUtils.LocalToWorld(parent, tileSize, gridX, gridY);
         pos.y = y;
         return Instantiate(prefab, pos, Quaternion.identity, parent);
     }
 
-    void TryPlaceWall(Transform parent, int x, int y)
+    private void TryPlaceWall(Transform parent, int x, int y)
     {
         if (x < 0 || y < 0 || x >= roomSize.x || y >= roomSize.y) return;
-        var wall = Pick(theme.wallTiles);
+        var wall = RandomPickAtArray(theme.wallTiles);
         if (wall == null) return;
-        InstantiateAtHeight(wall, parent, x, y, outerY); // 벽은 바깥 높이(=Y+1)에
+        InstantiateAtHeight(wall, parent, x, y, outerY);
     }
     
-    GameObject Pick(GameObject[] arr)
+    GameObject RandomPickAtArray(GameObject[] arr)
     {
         if (arr == null || arr.Length == 0) return null;
         int idx = rng.Next(arr.Length);
         return arr[idx];
     }
 
-    GameObject GetFirst(GameObject[] arr)
+    GameObject GetFirstAtArray(GameObject[] arr)
     {
         if (arr == null || arr.Length == 0) return null;
         return arr[0];
-    }
-
-    GameObject InstantiateAt(GameObject prefab, Transform parent, int gridX, int gridY)
-    {
-        Vector3 pos = LocalToWorld(parent, gridX, gridY);
-        var go = Instantiate(prefab, pos, Quaternion.identity, parent);
-        return go;
-    }
-
-    Vector3 LocalToWorld(Transform parent, int gridX, int gridY)
-    {
-        return parent.position + new Vector3(gridX * tileSize, 0f, gridY * tileSize);
-    }
-
-    bool IsInsideRect(int x, int y, Vector2Int minInclusive, Vector2Int maxInclusive)
-    {
-        return x >= minInclusive.x && x <= maxInclusive.x &&
-               y >= minInclusive.y && y <= maxInclusive.y;
-    }
-
-    bool IsNear(Vector2Int c, int x, int y, int r)
-    {
-        int dx = x - c.x; int dy = y - c.y;
-        return dx*dx + dy*dy <= r*r;
-    }
-
-    bool IsNearAny(List<Vector2Int> points, int x, int y, int r)
-    {
-        foreach (var p in points)
-            if (IsNear(p, x, y, r)) return true;
-        return false;
     }
 }
