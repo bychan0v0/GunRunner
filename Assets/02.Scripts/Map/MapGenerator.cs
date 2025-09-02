@@ -8,14 +8,14 @@ public class MapGenerator : MonoBehaviour
 
     [Min(1)] [SerializeField] private int roomCount = 8;
     
-    // === 방 크기와 내부(벽으로 둘러싸일) 공간 크기 ===
+    // 방 크기와 내부(벽으로 둘러싸일) 공간 크기
     [Header("Sizes")]
     [SerializeField] private Vector2Int roomSize = new Vector2Int(14, 10); // 전체 맵(그리드) 크기
     [SerializeField] private Vector2Int innerSize = new Vector2Int(10, 8); // 벽으로 둘러싸인 내부 공간 크기
     [SerializeField] private float tileSize = 1.0f;                        // 타일 월드 간격
     [Range(1, 5)] [SerializeField] private int wallRingThickness = 1;      // 벽/바깥 고지대 두께(타일 수)
 
-    // === 높이 ===
+    // 높이
     [Header("Heights")]
     [SerializeField] private float innerY = 0f;     // 내부 바닥 높이
     [SerializeField] private float outerY = 1f;     // 바깥(벽 포함) 높이 = 내부보다 +1
@@ -35,7 +35,7 @@ public class MapGenerator : MonoBehaviour
 
     System.Random rng;
 
-    // ======= 에디터에서 버튼처럼 쓰기 =======
+    // 에디터에서 버튼처럼 쓰기
     [ContextMenu("Generate Stage")]
     public void GenerateStage()
     {
@@ -100,8 +100,8 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    // ======= 단일 방 생성 =======
-    void GenerateSingleRoom(Transform roomParent, int roomIndex)
+    // 단일 방 생성
+    private void GenerateSingleRoom(Transform roomParent, int roomIndex)
     {
         // 0) 파라미터 정리/보정
         innerSize.x = Mathf.Clamp(innerSize.x, 1, roomSize.x - 2 * wallRingThickness);
@@ -120,7 +120,7 @@ public class MapGenerator : MonoBehaviour
         int ringMinY = Mathf.Max(0, innerStart.y - wallRingThickness);
         int ringMaxY = Mathf.Min(roomSize.y - 1, innerEnd.y   + wallRingThickness);
 
-        // === 스폰 타일: inner 중앙 1칸 ===
+        // 스폰 타일: inner 중앙 1칸
         Vector2Int centerTile = new Vector2Int(
             Mathf.RoundToInt((innerStart.x + innerEnd.x) * 0.5f),
             Mathf.RoundToInt((innerStart.y + innerEnd.y) * 0.5f)
@@ -230,7 +230,7 @@ public class MapGenerator : MonoBehaviour
     }
 
     // 유틸 메서드
-    GameObject InstantiateAtHeight(GameObject prefab, Transform parent, int gridX, int gridY, float y)
+    private GameObject InstantiateAtHeight(GameObject prefab, Transform parent, int gridX, int gridY, float y)
     {
         Vector3 pos = GridUtils.LocalToWorld(parent, tileSize, gridX, gridY);
         pos.y = y;
@@ -245,14 +245,14 @@ public class MapGenerator : MonoBehaviour
         InstantiateAtHeight(wall, parent, x, y, outerY);
     }
     
-    GameObject RandomPickAtArray(GameObject[] arr)
+    private GameObject RandomPickAtArray(GameObject[] arr)
     {
         if (arr == null || arr.Length == 0) return null;
         int idx = rng.Next(arr.Length);
         return arr[idx];
     }
 
-    GameObject GetFirstAtArray(GameObject[] arr)
+    private GameObject GetFirstAtArray(GameObject[] arr)
     {
         if (arr == null || arr.Length == 0) return null;
         return arr[0];
