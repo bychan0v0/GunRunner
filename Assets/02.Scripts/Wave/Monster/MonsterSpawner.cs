@@ -5,8 +5,8 @@ using UnityEngine;
 
 public class MonsterSpawner : MonoBehaviour
 {
-    [SerializeField] private Transform[] spawnPoints;     // 몬스터 소환 위치 배열
-    [SerializeField] private float       spawnInterval = 0.5f; // 몬스터 소환 간격
+    [SerializeField] private Transform[] spawnPoints; // 몬스터 소환 위치 배열
+    [SerializeField] private float spawnInterval = 0.5f; // 몬스터 소환 간격
 
     // 웨이브 시작 시 호출 (WaveManager에서 호출)
     public void BeginSpawn(WaveData wave, IWaveCounters counters, CancellationToken ct)
